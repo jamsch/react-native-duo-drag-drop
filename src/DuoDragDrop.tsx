@@ -154,7 +154,7 @@ const DuoDragDrop = React.forwardRef<DuoDragDropRef, DuoDragDropProps>(
 
     if (!initialized) {
       return (
-        <CalcOffsets
+        <ComputeWordLayout
           offsets={offsets}
           onContainerWidth={setContainerWidth}
           onLines={setNumLines}
@@ -163,7 +163,7 @@ const DuoDragDrop = React.forwardRef<DuoDragDropRef, DuoDragDropProps>(
           wordBankOffsetY={wordBankOffsetY}
         >
           {wordElements}
-        </CalcOffsets>
+        </ComputeWordLayout>
       );
     }
 
@@ -208,7 +208,7 @@ const DuoDragDrop = React.forwardRef<DuoDragDropRef, DuoDragDropProps>(
   },
 );
 
-interface CalcOffsetsProps {
+interface ComputeWordLayoutProps {
   children: JSX.Element[];
   offsets: Offset[];
   onLines(numLines: number): void;
@@ -218,7 +218,11 @@ interface CalcOffsetsProps {
   wordHeight: number;
 }
 
-function CalcOffsets({
+/**
+ * This component renders with 0 opacity in order to
+ * compute word positioning & container width
+ */
+function ComputeWordLayout({
   children,
   offsets,
   onLines,
@@ -226,12 +230,12 @@ function CalcOffsets({
   wordHeight,
   wordBankAlignment,
   wordBankOffsetY,
-}: CalcOffsetsProps) {
+}: ComputeWordLayoutProps) {
   const calculatedOffsets = useRef<LayoutRectangle[]>([]);
 
   return (
     <View
-      style={[styles.hiddenRow, styles[wordBankAlignment]]}
+      style={[styles.computeWordLayoutContainer, styles[wordBankAlignment]]}
       onLayout={(e) => {
         onContainerWidth(e.nativeEvent.layout.width);
       }}
@@ -276,13 +280,12 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
-  hiddenRow: {
+  computeWordLayoutContainer: {
     alignItems: "center",
+    flex: 1,
     flexDirection: "row",
     flexWrap: "wrap",
-    alignSelf: "center",
     opacity: 0,
-    backgroundColor: "pink",
   },
   center: {
     justifyContent: "center",
