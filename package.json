@@ -1,6 +1,6 @@
 {
   "name": "@jamsch/react-native-duo-drag-drop",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "Duolingo style drag and drop for React Native",
   "main": "lib/commonjs/index",
   "module": "lib/module/index",
