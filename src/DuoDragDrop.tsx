@@ -9,7 +9,10 @@ import Placeholder from "./Placeholder";
 import Lines from "./Lines";
 
 export interface DuoDragDropProps {
+  /** List of words */
   words: string[];
+  /** Re-renders the words when this value changes. */
+  extraData?: any;
   /** Height of an individual word. Default: 45 */
   wordHeight?: number;
   /** The gap between each word / line: Default: 4 */
@@ -57,6 +60,7 @@ const DuoDragDrop = React.forwardRef<DuoDragDropRef, DuoDragDropProps>(
   (
     {
       words,
+      extraData,
       renderWord,
       renderLines,
       renderPlaceholder,
@@ -74,13 +78,11 @@ const DuoDragDrop = React.forwardRef<DuoDragDropRef, DuoDragDropProps>(
 
     const wordElements = useMemo(() => {
       return words.map((word, index) => (
-        <WordContext.Provider key={word} value={{ wordHeight, wordGap, text: word }}>
+        <WordContext.Provider key={`${word}-${index}`} value={{ wordHeight, wordGap, text: word }}>
           {renderWord?.(word, index) || <Word />}
         </WordContext.Provider>
       ));
-    }, [words]);
-
-    // if word input has changed, force a re-render of the component
+    }, [words, extraData]);
 
     const offsets = words.map(() => ({
       order: useSharedValue(0),
@@ -172,11 +174,12 @@ const DuoDragDrop = React.forwardRef<DuoDragDropRef, DuoDragDropProps>(
     const PlaceholderComponent = renderPlaceholder || Placeholder;
     const LinesComponent = renderLines || Lines;
 
+
     return (
       <View style={styles.container}>
         <LinesComponent numLines={numLines} containerHeight={linesHeight} lineHeight={wordHeight + wordGap + 2} />
         {wordElements.map((child, index) => (
-          <Fragment key={`${words[index]}.${index}`}>
+          <Fragment key={`${words[index]}-f-${index}`}>
             {renderPlaceholder === null ? null : (
               <PlaceholderComponent
                 style={{

@@ -36,6 +36,7 @@ export default function App() {
           rtl={rtl}
           wordBankOffsetY={20}
           wordBankAlignment="center"
+          extraData={gradeWords}
           renderWord={(word, index) => (
             <Word
               containerStyle={
