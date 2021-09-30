@@ -4,7 +4,7 @@ Duolingo-style drag and drop for React Native using `react-native-gesture-handle
 
 ![https://i.imgur.com/1YkxXk3.gif](https://i.imgur.com/1YkxXk3.gif)
 
-## Pre-requisites
+## Prerequisites
 
 Please make sure you have the the following dependencies installed in your project before continuing:
 
@@ -52,6 +52,26 @@ export default App;
 | renderWord        | (word: string, index: number) => JSX.Element                                              | (Optional) Overrides the default word renderer                                                             |
 | renderPlaceholder | (props: {style: StyleProp\<ViewStyle\>}) => JSX.Element                                   | (Optional) Overrides the default placeholder renderer                                                      |
 | renderLines       | (props: { numLines: number; containerHeight: number; lineHeight: number }) => JSX.Element | (Optional) Overrides the default lines renderer                                                            |
+
+## DuoDragDrop ref value
+
+```ts
+/** Returns an ordered list of words that are in the "word bank" as well as answered */
+getWords(): { answered: string[]; bank: string[] };
+/** Returns an array of words that are outside the "word bank" */
+getAnsweredWords(): string[];
+/* 
+* Gets the order value of each word by the word's index.
+* -1 indicates that it's in the "bank"
+* e.g. ["hello", "world", "foo", "bar"] -> [1, -1, 0, 2] corresponds to:
+* - ["hello", "foo", "bar"] (unordered) or
+* - ["foo", "hello", "bar"] (ordered) in the "answered" pile
+* - and ["world"] in the "bank" pile
+*/
+getOffsets(): number[];
+/* Animates the word buttons to move to new positions */
+setOffsets(newOffsets: number[]): void;
+```
 
 ## Fetching words in the "bank" or "answered" pile
 
