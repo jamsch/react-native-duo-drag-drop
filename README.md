@@ -39,19 +39,20 @@ export default App;
 
 ## DuoDragDrop props
 
-| Prop              | Type                                                                                      | Description                                                                                                |
-| ----------------- | ----------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------- |
-| words             | string[]                                                                                  | List of words that will be used for the drag-and-drop                                                      |
-| extraData         | any?                                                                                      | (Optional) A marker property for telling the words to re-render                                            |
-| wordHeight        | number?                                                                                   | (Optional) height of an individual word. Default: 45                                                       |
-| wordGap           | number?                                                                                   | (Optional) The gap between each word / line: Default: 4                                                    |
-| wordBankOffsetY   | number?                                                                                   | (Optional) The offset between the "Bank" pile and the "Answer" pile. Default: 20                           |
-| wordBankAlignment | "center" \| "right" \| "left"                                                             | (Optional) Alignment of the words in the word bank. Default "center"                                       |
-| gesturesDisabled  | boolean?                                                                                  | (Optional) Whether tap & drag gestures are disabled. Default: false                                        |
-| rtl               | boolean?                                                                                  | (Optional) Whether to lay out words in the "Answer" pile from right-to-left (for languages such as Arabic) |
-| renderWord        | (word: string, index: number) => JSX.Element                                              | (Optional) Overrides the default word renderer                                                             |
-| renderPlaceholder | (props: {style: StyleProp\<ViewStyle\>}) => JSX.Element                                   | (Optional) Overrides the default placeholder renderer                                                      |
-| renderLines       | (props: { numLines: number; containerHeight: number; lineHeight: number }) => JSX.Element | (Optional) Overrides the default lines renderer                                                            |
+| Prop                 | Type                                                                                      | Description                                                                                                |
+| -------------------- | ----------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------- |
+| words                | string[]                                                                                  | List of words that will be used for the drag-and-drop                                                      |
+| extraData            | any?                                                                                      | (Optional) A marker property for telling the words to re-render                                            |
+| wordHeight           | number?                                                                                   | (Optional) height of an individual word. Default: 45                                                       |
+| wordGap              | number?                                                                                   | (Optional) The gap between each word / line: Default: 4                                                    |
+| wordBankOffsetY      | number?                                                                                   | (Optional) The offset between the "Bank" pile and the "Answer" pile. Default: 20                           |
+| wordBankAlignment    | "center" \| "right" \| "left"                                                             | (Optional) Alignment of the words in the word bank. Default "center"                                       |
+| gesturesDisabled     | boolean?                                                                                  | (Optional) Whether tap & drag gestures are disabled. Default: false                                        |
+| rtl                  | boolean?                                                                                  | (Optional) Whether to lay out words in the "Answer" pile from right-to-left (for languages such as Arabic) |
+| renderWord           | (word: string, index: number) => JSX.Element                                              | (Optional) Overrides the default word renderer                                                             |
+| renderPlaceholder    | (props: {style: StyleProp\<ViewStyle\>}) => JSX.Element                                   | (Optional) Overrides the default placeholder renderer                                                      |
+| renderLines          | (props: { numLines: number; containerHeight: number; lineHeight: number }) => JSX.Element | (Optional) Overrides the default lines renderer                                                            |
+| animatedStyleWorklet | (style: ViewStyle, isGestureActive: boolean) => ViewStyle                                 | (Optional) A worket function that allows you to modify the style of the word while it is being dragged.    |
 
 ## DuoDragDrop ref value
 
@@ -60,9 +61,10 @@ export default App;
 getWords(): { answered: string[]; bank: string[] };
 /** Returns an array of words that are outside the "word bank" */
 getAnsweredWords(): string[];
-/* 
+/**
 * Gets the order value of each word by the word's index.
 * -1 indicates that it's in the "bank"
+*
 * e.g. ["hello", "world", "foo", "bar"] -> [1, -1, 0, 2] corresponds to:
 * - ["hello", "foo", "bar"] (unordered) or
 * - ["foo", "hello", "bar"] (ordered) in the "answered" pile
@@ -134,6 +136,42 @@ function DndExample() {
       renderLines={(props) => (
         <Lines {...props} containerStyle={{ backgroundColor: "transparent" }} lineStyle={{ borderColor: "#CCC" }} />
       )}
+    />
+  );
+}
+```
+
+## Customising animations
+
+You can customise how the words are animated by providing a worklet function.
+
+```tsx
+import DuoDragDrop, { DuoAnimatedStyleWorklet } from "@jamsch/react-native-duo-drag-drop";
+import { withTiming, withSpring } from "react-native-reanimated";
+
+const customAnimatedStyle: DuoAnimatedStyleWorklet = (style, isGestureActive) => {
+  "worklet";
+  // Scale the word when the gesture is active
+  style.transform.push({
+    scale: withTiming(isGestureActive ? 1.5 : 1, { duration: 250 }),
+  });
+  style.opacity = withTiming(isGestureActive ? 0.8 : 1, { duration: 250 });
+  style.top = withTiming(isGestureActive ? -10 : 0, { duration: 250 });
+
+  // Apply a spring when the word moves to it's destination
+  if (!isGestureActive) {
+    style.transform[0].translateX = withSpring(style.transform[0].translateX);
+    style.transform[1].translateY = withSpring(style.transform[1].translateY);
+  }
+
+  return style;
+};
+
+export default function DragDrop() {
+  return (
+    <DuoDragDrop
+      words={["Juan", "She", "apples", "today", "with", "eats", "her", "another"]}
+      animatedStyleWorklet={customAnimatedStyle}
     />
   );
 }

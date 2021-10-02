@@ -1,3 +1,4 @@
+/* eslint-disable react-native/no-inline-styles */
 /* eslint-disable react-hooks/rules-of-hooks */
 import React, { createContext, Fragment, useEffect, useImperativeHandle, useMemo, useRef, useState } from "react";
 import { View, StyleSheet, LayoutRectangle } from "react-native";
@@ -7,6 +8,7 @@ import { calculateLayout, Offset } from "./Layout";
 import Word from "./Word";
 import Placeholder from "./Placeholder";
 import Lines from "./Lines";
+import type { DuoAnimatedStyleWorklet } from "./types";
 
 export interface DuoDragDropProps {
   /** List of words */
@@ -41,6 +43,8 @@ export interface DuoDragDropProps {
         };
       }) => JSX.Element)
     | null;
+  /** Allows user to modify animation of the word while it's animating. NOTE: this must be a worklet */
+  animatedStyleWorklet?: DuoAnimatedStyleWorklet;
 }
 
 export const WordContext = createContext({ wordHeight: 55, text: "", wordGap: 4 });
@@ -50,166 +54,173 @@ export type DuoDragDropRef = {
   getWords(): { answered: string[]; bank: string[] };
   /** Returns an array of words that are outside the "word bank" */
   getAnsweredWords(): string[];
-  /* Gets the order value of each word by their index */
+  /**
+   * Gets the order value of each word by the word's index.
+   * -1 indicates that it's in the "bank"
+   *
+   * e.g. ["hello", "world", "foo", "bar"] -> [1, -1, 0, 2] corresponds to:
+   * - ["hello", "foo", "bar"] (unordered) or
+   * - ["foo", "hello", "bar"] (ordered) in the "answered" pile
+   * - and ["world"] in the "bank" pile
+   */
   getOffsets(): number[];
   /* Animates the word buttons to move to new positions */
   setOffsets(newOffsets: number[]): void;
 };
 
-const DuoDragDrop = React.forwardRef<DuoDragDropRef, DuoDragDropProps>(
-  (
-    {
-      words,
-      extraData,
-      renderWord,
-      renderLines,
-      renderPlaceholder,
-      rtl,
-      gesturesDisabled,
-      wordBankAlignment = "center",
-      wordGap = 4,
-      wordBankOffsetY = 20,
-      wordHeight = 45,
-    },
-    ref,
-  ) => {
-    const [numLines, setNumLines] = useState(0);
-    const [containerWidth, setContainerWidth] = useState(0);
+const DuoDragDrop = React.forwardRef<DuoDragDropRef, DuoDragDropProps>((props, ref) => {
+  const {
+    words,
+    extraData,
+    renderWord,
+    renderLines,
+    renderPlaceholder,
+    rtl,
+    gesturesDisabled,
+    wordBankAlignment = "center",
+    wordGap = 4,
+    wordBankOffsetY = 20,
+    wordHeight = 45,
+    animatedStyleWorklet,
+  } = props;
+  const [numLines, setNumLines] = useState(0);
+  const [containerWidth, setContainerWidth] = useState(0);
 
-    const wordElements = useMemo(() => {
-      return words.map((word, index) => (
-        <WordContext.Provider key={`${word}-${index}`} value={{ wordHeight, wordGap, text: word }}>
-          {renderWord?.(word, index) || <Word />}
-        </WordContext.Provider>
-      ));
-    }, [words, extraData]);
+  const wordElements = useMemo(() => {
+    return words.map((word, index) => (
+      <WordContext.Provider key={`${word}-${index}`} value={{ wordHeight, wordGap, text: word }}>
+        {renderWord?.(word, index) || <Word />}
+      </WordContext.Provider>
+    ));
+    // Note: "extraData" provided here is used to force a re-render when the words change.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [words, wordHeight, wordGap, extraData, renderWord]);
 
-    const offsets = words.map(() => ({
-      order: useSharedValue(0),
-      width: useSharedValue(0),
-      height: useSharedValue(0),
-      x: useSharedValue(0),
-      y: useSharedValue(0),
-      originalX: useSharedValue(0),
-      originalY: useSharedValue(0),
-    }));
+  const offsets = words.map(() => ({
+    order: useSharedValue(0),
+    width: useSharedValue(0),
+    height: useSharedValue(0),
+    x: useSharedValue(0),
+    y: useSharedValue(0),
+    originalX: useSharedValue(0),
+    originalY: useSharedValue(0),
+  }));
 
-    useImperativeHandle(ref, () => ({
-      getWords: () => {
-        const answeredWords = [];
-        const bankWords = [];
-        for (let i = 0; i < offsets.length; i++) {
-          const offset = offsets[i];
-          const word = words[i];
-          if (offset.order.value !== -1) {
-            answeredWords.push({ word, order: offset.order.value });
-          } else {
-            bankWords.push({ word, order: offset.order.value });
-          }
+  useImperativeHandle(ref, () => ({
+    getWords: () => {
+      const answeredWords = [];
+      const bankWords = [];
+      for (let i = 0; i < offsets.length; i++) {
+        const offset = offsets[i];
+        const word = words[i];
+        if (offset.order.value !== -1) {
+          answeredWords.push({ word, order: offset.order.value });
+        } else {
+          bankWords.push({ word, order: offset.order.value });
         }
-        return {
-          answered: answeredWords.sort((a, b) => a.order - b.order).map((w) => w.word),
-          bank: bankWords.sort((a, b) => a.order - b.order).map((w) => w.word),
-        };
-      },
-      // Returns an array of words that are outside the "word bank"
-      getAnsweredWords: () => {
-        const answeredWords = [];
-        for (let i = 0; i < offsets.length; i++) {
-          const offset = offsets[i];
-          if (offset.order.value !== -1) {
-            const word = words[i];
-            answeredWords.push({ word, order: offset.order.value });
-          }
-        }
-        // Sort by the order, and return the words in an ordered array
-        return answeredWords.sort((a, b) => a.order - b.order).map((w) => w.word);
-      },
-      // Gets the order value of each word by their index
-      getOffsets() {
-        return offsets.map((o) => o.order.value);
-      },
-      // Animates the word buttons to move to new positions
-      setOffsets(newOffsets: number[]) {
-        runOnUI(() => {
-          for (let i = 0; i < newOffsets.length; i++) {
-            offsets[i].order.value = newOffsets[i];
-          }
-          setTimeout(() => calculateLayout(offsets, containerWidth, wordHeight, wordGap, rtl), 16);
-        })();
-      },
-    }));
-
-    const initialized = numLines > 0 && containerWidth > 0;
-
-    // Toggle right-to-left layout
-    useEffect(() => {
-      if (initialized) {
-        runOnUI(() => {
-          calculateLayout(offsets, containerWidth, wordHeight, wordGap, rtl);
-        })();
       }
-    }, [rtl, initialized]);
+      return {
+        answered: answeredWords.sort((a, b) => a.order - b.order).map((w) => w.word),
+        bank: bankWords.sort((a, b) => a.order - b.order).map((w) => w.word),
+      };
+    },
+    // Returns an array of words that are outside the "word bank"
+    getAnsweredWords: () => {
+      const answeredWords = [];
+      for (let i = 0; i < offsets.length; i++) {
+        const offset = offsets[i];
+        if (offset.order.value !== -1) {
+          const word = words[i];
+          answeredWords.push({ word, order: offset.order.value });
+        }
+      }
+      // Sort by the order, and return the words in an ordered array
+      return answeredWords.sort((a, b) => a.order - b.order).map((w) => w.word);
+    },
+    // Gets the order value of each word by their index
+    getOffsets() {
+      return offsets.map((o) => o.order.value);
+    },
+    // Animates the word buttons to move to new positions
+    setOffsets(newOffsets: number[]) {
+      runOnUI(() => {
+        for (let i = 0; i < newOffsets.length; i++) {
+          offsets[i].order.value = newOffsets[i];
+        }
+        setTimeout(() => calculateLayout(offsets, containerWidth, wordHeight, wordGap, rtl), 16);
+      })();
+    },
+  }));
 
-    // We first have to render the (opacity=0) child components in order to obtain x/y/width/height of every word segment
-    // This will allow us to position the elements in the Lines
+  const initialized = numLines > 0 && containerWidth > 0;
 
-    if (!initialized) {
-      return (
-        <ComputeWordLayout
-          offsets={offsets}
-          onContainerWidth={setContainerWidth}
-          onLines={setNumLines}
-          wordHeight={wordHeight}
-          wordBankAlignment={wordBankAlignment}
-          wordBankOffsetY={wordBankOffsetY}
-        >
-          {wordElements}
-        </ComputeWordLayout>
-      );
+  // Toggle right-to-left layout
+  useEffect(() => {
+    if (initialized) {
+      runOnUI(() => {
+        calculateLayout(offsets, containerWidth, wordHeight, wordGap, rtl);
+      })();
     }
+  }, [rtl, initialized, offsets, containerWidth, wordHeight, wordGap]);
 
-    const linesHeight = numLines * (wordHeight + wordGap * 2) || wordHeight;
+  // We first have to render the (opacity=0) child components in order to obtain x/y/width/height of every word segment
+  // This will allow us to position the elements in the Lines
 
-    const PlaceholderComponent = renderPlaceholder || Placeholder;
-    const LinesComponent = renderLines || Lines;
-
-
+  if (!initialized) {
     return (
-      <View style={styles.container}>
-        <LinesComponent numLines={numLines} containerHeight={linesHeight} lineHeight={wordHeight + wordGap + 2} />
-        {wordElements.map((child, index) => (
-          <Fragment key={`${words[index]}-f-${index}`}>
-            {renderPlaceholder === null ? null : (
-              <PlaceholderComponent
-                style={{
-                  position: "absolute",
-                  height: wordHeight,
-                  top: offsets[index].originalY.value + wordBankOffsetY + wordGap,
-                  left: offsets[index].originalX.value + wordGap,
-                  width: offsets[index].width.value - wordGap * 2,
-                }}
-              />
-            )}
-            <SortableWord
-              offsets={offsets}
-              index={index}
-              rtl={Boolean(rtl)}
-              containerWidth={containerWidth}
-              gesturesDisabled={Boolean(gesturesDisabled)}
-              linesHeight={linesHeight}
-              wordHeight={wordHeight}
-              wordGap={wordGap}
-              wordBankOffsetY={wordBankOffsetY}
-            >
-              {child}
-            </SortableWord>
-          </Fragment>
-        ))}
-      </View>
+      <ComputeWordLayout
+        offsets={offsets}
+        onContainerWidth={setContainerWidth}
+        onLines={setNumLines}
+        wordHeight={wordHeight}
+        wordBankAlignment={wordBankAlignment}
+        wordBankOffsetY={wordBankOffsetY}
+      >
+        {wordElements}
+      </ComputeWordLayout>
     );
-  },
-);
+  }
+
+  const linesHeight = numLines * (wordHeight + wordGap * 2) || wordHeight;
+
+  const PlaceholderComponent = renderPlaceholder || Placeholder;
+  const LinesComponent = renderLines || Lines;
+
+  return (
+    <View style={styles.container}>
+      <LinesComponent numLines={numLines} containerHeight={linesHeight} lineHeight={wordHeight + wordGap + 2} />
+      {wordElements.map((child, index) => (
+        <Fragment key={`${words[index]}-f-${index}`}>
+          {renderPlaceholder === null ? null : (
+            <PlaceholderComponent
+              style={{
+                position: "absolute",
+                height: wordHeight,
+                top: offsets[index].originalY.value + wordBankOffsetY + wordGap,
+                left: offsets[index].originalX.value + wordGap,
+                width: offsets[index].width.value - wordGap * 2,
+              }}
+            />
+          )}
+          <SortableWord
+            offsets={offsets}
+            index={index}
+            rtl={Boolean(rtl)}
+            containerWidth={containerWidth}
+            gesturesDisabled={Boolean(gesturesDisabled)}
+            linesHeight={linesHeight}
+            wordHeight={wordHeight}
+            wordGap={wordGap}
+            wordBankOffsetY={wordBankOffsetY}
+            animatedStyleWorklet={animatedStyleWorklet}
+          >
+            {child}
+          </SortableWord>
+        </Fragment>
+      ))}
+    </View>
+  );
+});
 
 interface ComputeWordLayoutProps {
   children: JSX.Element[];

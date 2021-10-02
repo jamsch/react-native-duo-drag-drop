@@ -1,5 +1,5 @@
 import React, { ReactElement } from "react";
-import { StyleSheet } from "react-native";
+import { StyleSheet, ViewStyle } from "react-native";
 import Animated, {
   useAnimatedStyle,
   useAnimatedGestureHandler,
@@ -10,8 +10,11 @@ import Animated, {
 import { PanGestureHandler, PanGestureHandlerGestureEvent, TapGestureHandler } from "react-native-gesture-handler";
 import { between, useVector } from "react-native-redash";
 import { calculateLayout, lastOrder, Offset, remove, reorder } from "./Layout";
+import type { DuoAnimatedStyleWorklet } from "./types";
+import type { DuoWordAnimatedStyle } from ".";
 
-interface SortableWordProps {
+export interface SortableWordProps {
+  animatedStyleWorklet?: DuoAnimatedStyleWorklet;
   offsets: Offset[];
   children: ReactElement<{ id: number }>;
   index: number;
@@ -25,6 +28,7 @@ interface SortableWordProps {
 }
 
 const SortableWord = ({
+  animatedStyleWorklet,
   offsets,
   index,
   children,
@@ -123,7 +127,7 @@ const SortableWord = ({
   });
 
   const style = useAnimatedStyle(() => {
-    return {
+    const style: DuoWordAnimatedStyle & ViewStyle = {
       position: "absolute",
       top: 0,
       left: -1,
@@ -132,6 +136,7 @@ const SortableWord = ({
       height: wordHeight + 2,
       transform: [{ translateX: translateX.value }, { translateY: translateY.value }],
     };
+    return (animatedStyleWorklet?.(style, isGestureActive.value) || style) as ViewStyle;
   });
   return (
     <Animated.View style={style}>
