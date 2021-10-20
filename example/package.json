@@ -4,18 +4,20 @@
   "version": "0.0.1",
   "private": true,
   "scripts": {
-    "android": "react-native run-android -- --deviceId emulator-5556",
+    "android": "react-native run-android",
     "ios": "react-native run-ios",
     "start": "react-native start"
   },
   "dependencies": {
     "react": "^17.0.2",
-    "react-native": "0.65.1",
-    "react-native-reanimated": "^2.2.2",
+    "react-native": "0.66.1",
+    "react-native-reanimated": "^2.2.3",
     "react-native-gesture-handler": "^1.10.3"
   },
   "devDependencies": {
-    "@babel/core": "^7.15.5",
+    "@types/react": "^17.0.30",
+    "@types/react-native": "0.65.8",
+    "@babel/core": "^7.15.8",
     "@babel/runtime": "^7.15.4",
     "babel-plugin-module-resolver": "^4.1.0",
     "metro-react-native-babel-preset": "^0.66.2"
