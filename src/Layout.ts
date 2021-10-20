@@ -77,6 +77,6 @@ export const calculateLayout = (
     } else {
       offset.x.value = rtl ? containerWidth - total - offset.width.value : total;
     }
-    offset.y.value = (wordHeight + lineGap) * lineNumber + (lineNumber === 0 ? lineGap / 2 : lineGap / 2);
+    offset.y.value = (wordHeight + lineGap) * lineNumber + lineGap / 2;
   }
 };
