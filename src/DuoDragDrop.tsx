@@ -1,7 +1,6 @@
-/* eslint-disable react-native/no-inline-styles */
 /* eslint-disable react-hooks/rules-of-hooks */
 import React, { createContext, Fragment, useEffect, useImperativeHandle, useMemo, useRef, useState } from "react";
-import { View, StyleSheet, LayoutRectangle } from "react-native";
+import { View, StyleSheet, LayoutRectangle, StyleProp, ViewStyle } from "react-native";
 import { useSharedValue, runOnUI } from "react-native-reanimated";
 import SortableWord from "./SortableWord";
 import { calculateLayout, Offset } from "./Layout";
@@ -19,6 +18,8 @@ export interface DuoDragDropProps {
   wordHeight?: number;
   /** The gap between each word / line: Default: 4 */
   wordGap?: number;
+  /** The height of a single line in the top "answered" pile. Default: wordHeight * 1.2  */
+  lineHeight?: number;
   /** The margin between the "Bank" pile and the "Answer" pile. Default: 20 */
   wordBankOffsetY?: number;
   /** Whether to lay out words in the "Answer" pile from right-to-left (for languages such as Arabic) */
@@ -45,6 +46,8 @@ export interface DuoDragDropProps {
     | null;
   /** Allows user to modify animation of the word while it's animating. NOTE: this must be a worklet */
   animatedStyleWorklet?: DuoAnimatedStyleWorklet;
+  /** Runs when the drag-and-drop has rendered */
+  onReady?: (ready: boolean) => void;
 }
 
 export const WordContext = createContext({ wordHeight: 55, text: "", wordGap: 4 });
@@ -82,8 +85,11 @@ const DuoDragDrop = React.forwardRef<DuoDragDropRef, DuoDragDropProps>((props, r
     wordBankOffsetY = 20,
     wordHeight = 45,
     animatedStyleWorklet,
+    onReady,
   } = props;
-  const [numLines, setNumLines] = useState(0);
+  const lineHeight = props.lineHeight || wordHeight * 1.2;
+  const lineGap = lineHeight - wordHeight;
+  const [layout, setLayout] = useState<{ numLines: number; wordStyles: StyleProp<ViewStyle>[] } | null>(null);
   const [containerWidth, setContainerWidth] = useState(0);
 
   const wordElements = useMemo(() => {
@@ -147,68 +153,77 @@ const DuoDragDrop = React.forwardRef<DuoDragDropRef, DuoDragDropProps>((props, r
         for (let i = 0; i < newOffsets.length; i++) {
           offsets[i].order.value = newOffsets[i];
         }
-        setTimeout(() => calculateLayout(offsets, containerWidth, wordHeight, wordGap, rtl), 16);
+        setTimeout(() => calculateLayout(offsets, containerWidth, wordHeight, wordGap, lineGap, rtl), 16);
       })();
     },
   }));
 
-  const initialized = numLines > 0 && containerWidth > 0;
+  const initialized = layout && containerWidth > 0;
 
   // Toggle right-to-left layout
   useEffect(() => {
     if (initialized) {
       runOnUI(() => {
-        calculateLayout(offsets, containerWidth, wordHeight, wordGap, rtl);
+        calculateLayout(offsets, containerWidth, wordHeight, wordGap, lineGap, rtl);
       })();
     }
-  }, [rtl, initialized, offsets, containerWidth, wordHeight, wordGap]);
+  }, [rtl, initialized, offsets, containerWidth, wordHeight, wordGap, lineGap]);
+
+  useEffect(() => {
+    // Notify parent the initialized status
+    onReady?.(!!initialized);
+  }, [initialized, onReady]);
+
+  useEffect(() => {
+    // Reset layout when the values change
+    setLayout(null);
+  }, [wordBankOffsetY, wordBankAlignment, wordGap, wordHeight]);
 
   // We first have to render the (opacity=0) child components in order to obtain x/y/width/height of every word segment
   // This will allow us to position the elements in the Lines
-
   if (!initialized) {
     return (
       <ComputeWordLayout
         offsets={offsets}
         onContainerWidth={setContainerWidth}
-        onLines={setNumLines}
+        onLayout={setLayout}
         wordHeight={wordHeight}
+        lineHeight={lineHeight}
         wordBankAlignment={wordBankAlignment}
         wordBankOffsetY={wordBankOffsetY}
+        wordGap={wordGap}
       >
         {wordElements}
       </ComputeWordLayout>
     );
   }
 
-  const linesHeight = numLines * (wordHeight + wordGap * 2) || wordHeight;
+  const { numLines, wordStyles } = layout;
+
+  // Add an extra line to account for certain word combinations that can wrap over to a new line
+  const idealNumLines = numLines < 3 ? numLines + 1 : numLines;
+  const linesContainerHeight = idealNumLines * lineHeight || lineHeight;
+  /** Since word bank is absolutely positioned, estimate the total height of container with offsets */
+  const wordBankHeight = numLines * (wordHeight + wordGap * 2) + wordBankOffsetY * 2;
 
   const PlaceholderComponent = renderPlaceholder || Placeholder;
   const LinesComponent = renderLines || Lines;
 
   return (
     <View style={styles.container}>
-      <LinesComponent numLines={numLines} containerHeight={linesHeight} lineHeight={wordHeight + wordGap + 2} />
+      <LinesComponent numLines={idealNumLines} containerHeight={linesContainerHeight} lineHeight={lineHeight} />
+      <View style={{ minHeight: wordBankHeight }} />
       {wordElements.map((child, index) => (
         <Fragment key={`${words[index]}-f-${index}`}>
-          {renderPlaceholder === null ? null : (
-            <PlaceholderComponent
-              style={{
-                position: "absolute",
-                height: wordHeight,
-                top: offsets[index].originalY.value + wordBankOffsetY + wordGap,
-                left: offsets[index].originalX.value + wordGap,
-                width: offsets[index].width.value - wordGap * 2,
-              }}
-            />
-          )}
+          {renderPlaceholder === null ? null : <PlaceholderComponent style={wordStyles[index] as any} />}
           <SortableWord
             offsets={offsets}
             index={index}
             rtl={Boolean(rtl)}
             containerWidth={containerWidth}
             gesturesDisabled={Boolean(gesturesDisabled)}
-            linesHeight={linesHeight}
+            linesHeight={linesContainerHeight}
+            lineGap={lineGap}
             wordHeight={wordHeight}
             wordGap={wordGap}
             wordBankOffsetY={wordBankOffsetY}
@@ -225,11 +240,13 @@ const DuoDragDrop = React.forwardRef<DuoDragDropRef, DuoDragDropProps>((props, r
 interface ComputeWordLayoutProps {
   children: JSX.Element[];
   offsets: Offset[];
-  onLines(numLines: number): void;
+  onLayout(params: { numLines: number; wordStyles: StyleProp<ViewStyle>[] }): void;
   onContainerWidth(width: number): void;
   wordBankAlignment: "center" | "left" | "right";
   wordBankOffsetY: number;
   wordHeight: number;
+  lineHeight: number;
+  wordGap: number;
 }
 
 /**
@@ -237,15 +254,18 @@ interface ComputeWordLayoutProps {
  * compute word positioning & container width
  */
 function ComputeWordLayout({
+  wordGap,
   children,
   offsets,
-  onLines,
+  onLayout,
   onContainerWidth,
   wordHeight,
+  lineHeight,
   wordBankAlignment,
   wordBankOffsetY,
 }: ComputeWordLayoutProps) {
   const calculatedOffsets = useRef<LayoutRectangle[]>([]);
+  const offsetStyles = useRef<StyleProp<ViewStyle>[]>([]);
 
   return (
     <View
@@ -261,6 +281,7 @@ function ComputeWordLayout({
             onLayout={(e) => {
               const { x, y, width, height } = e.nativeEvent.layout;
               calculatedOffsets.current[index] = { width, height, x, y };
+
               if (calculatedOffsets.current.length === children.length) {
                 const numLines = new Set();
                 for (const index in calculatedOffsets.current) {
@@ -268,7 +289,7 @@ function ComputeWordLayout({
                   numLines.add(y);
                 }
                 const numLinesSize = numLines.size < 3 ? numLines.size + 1 : numLines.size;
-                const linesHeight = numLinesSize * wordHeight;
+                const linesHeight = numLinesSize * lineHeight;
                 for (const index in calculatedOffsets.current) {
                   const { x, y, width } = calculatedOffsets.current[index];
                   const offset = offsets[index];
@@ -276,9 +297,17 @@ function ComputeWordLayout({
                   offset.width.value = width;
                   offset.originalX.value = x;
                   offset.originalY.value = y + linesHeight + wordBankOffsetY;
+
+                  offsetStyles.current[index] = {
+                    position: "absolute",
+                    height: wordHeight,
+                    top: y + linesHeight + wordBankOffsetY * 2,
+                    left: x + wordGap,
+                    width: width - wordGap * 2,
+                  };
                 }
 
-                onLines(numLinesSize);
+                onLayout({ numLines: numLines.size, wordStyles: offsetStyles.current });
               }
             }}
           >
@@ -293,13 +322,13 @@ function ComputeWordLayout({
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    position: "relative",
   },
   computeWordLayoutContainer: {
-    alignItems: "center",
-    flex: 1,
     flexDirection: "row",
     flexWrap: "wrap",
-    opacity: 0,
+    opacity: 1,
+    backgroundColor: "red",
   },
   center: {
     justifyContent: "center",

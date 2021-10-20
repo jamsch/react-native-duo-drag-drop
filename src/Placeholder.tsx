@@ -14,7 +14,5 @@ const styles = StyleSheet.create({
   placeholder: {
     backgroundColor: colors.grey,
     borderRadius: 8,
-    borderWidth: 2,
-    borderColor: colors.grey,
   },
 });

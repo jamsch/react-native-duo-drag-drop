@@ -56,6 +56,7 @@ export const calculateLayout = (
   containerWidth: number,
   wordHeight: number,
   wordGap: number,
+  lineGap: number,
   rtl = false,
 ) => {
   "worklet";
@@ -76,6 +77,6 @@ export const calculateLayout = (
     } else {
       offset.x.value = rtl ? containerWidth - total - offset.width.value : total;
     }
-    offset.y.value = (wordHeight + wordGap * 2) * lineNumber;
+    offset.y.value = (wordHeight + lineGap) * lineNumber + (lineNumber === 0 ? lineGap / 2 : lineGap / 2);
   }
 };

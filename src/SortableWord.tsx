@@ -25,6 +25,7 @@ export interface SortableWordProps {
   wordHeight: number;
   wordGap: number;
   wordBankOffsetY: number;
+  lineGap: number;
 }
 
 const SortableWord = ({
@@ -39,6 +40,7 @@ const SortableWord = ({
   wordHeight,
   wordGap,
   wordBankOffsetY,
+  lineGap,
 }: SortableWordProps) => {
   const offset = offsets[index];
   const isGestureActive = useSharedValue(false);
@@ -69,11 +71,11 @@ const SortableWord = ({
 
       if (isInBank.value && translation.y.value < linesHeight) {
         offset.order.value = lastOrder(offsets);
-        calculateLayout(offsets, containerWidth, wordHeight, wordGap, rtl);
+        calculateLayout(offsets, containerWidth, wordHeight, wordGap, lineGap, rtl);
       } else if (!isInBank.value && translation.y.value > linesHeight - wordHeight / 2) {
         offset.order.value = -1;
         remove(offsets, index);
-        calculateLayout(offsets, containerWidth, wordHeight, wordGap, rtl);
+        calculateLayout(offsets, containerWidth, wordHeight, wordGap, lineGap, rtl);
       }
 
       for (let i = 0; i < offsets.length; i++) {
@@ -90,7 +92,7 @@ const SortableWord = ({
           offset.order.value !== o.order.value
         ) {
           reorder(offsets, offset.order.value, o.order.value);
-          calculateLayout(offsets, containerWidth, wordHeight, wordGap, rtl);
+          calculateLayout(offsets, containerWidth, wordHeight, wordGap, lineGap, rtl);
           break;
         }
       }
@@ -133,7 +135,7 @@ const SortableWord = ({
       left: -1,
       zIndex: isGestureActive.value || isAnimating.value ? 100 : Math.max(1, offset.order.value),
       width: offset.width.value + 2,
-      height: wordHeight + 2,
+      height: wordHeight,
       transform: [{ translateX: translateX.value }, { translateY: translateY.value }],
     };
     return (animatedStyleWorklet?.(style, isGestureActive.value) || style) as ViewStyle;
@@ -157,7 +159,7 @@ const SortableWord = ({
 
                 isAnimating.value = true;
                 setTimeout(() => {
-                  calculateLayout(offsets, containerWidth, wordHeight, wordGap, rtl);
+                  calculateLayout(offsets, containerWidth, wordHeight, wordGap, lineGap, rtl);
                   translation.x.value = offset.x.value;
                   translation.y.value = offset.y.value;
                 }, 16);
