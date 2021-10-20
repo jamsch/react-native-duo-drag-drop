@@ -327,8 +327,7 @@ const styles = StyleSheet.create({
   computeWordLayoutContainer: {
     flexDirection: "row",
     flexWrap: "wrap",
-    opacity: 1,
-    backgroundColor: "red",
+    opacity: 0,
   },
   center: {
     justifyContent: "center",
