@@ -277,12 +277,12 @@ function ComputeWordLayout({
       {children.map((child, index) => {
         return (
           <View
-            key={index}
+            key={`compute.${index}`}  
             onLayout={(e) => {
               const { x, y, width, height } = e.nativeEvent.layout;
               calculatedOffsets.current[index] = { width, height, x, y };
 
-              if (calculatedOffsets.current.length === children.length) {
+              if (Object.keys(calculatedOffsets.current).length === children.length) {
                 const numLines = new Set();
                 for (const index in calculatedOffsets.current) {
                   const { y } = calculatedOffsets.current[index];
@@ -306,8 +306,9 @@ function ComputeWordLayout({
                     width: width - wordGap * 2,
                   };
                 }
-
-                onLayout({ numLines: numLines.size, wordStyles: offsetStyles.current });
+                setTimeout(() => {
+                  onLayout({ numLines: numLines.size, wordStyles: offsetStyles.current });
+                }, 16);
               }
             }}
           >
