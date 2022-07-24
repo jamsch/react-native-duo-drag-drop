@@ -12,6 +12,8 @@ Please make sure you have the the following dependencies installed in your proje
 - react-native-reanimated ^2.8.0
 - react-native-gesture-handler ^2.2.1
 
+For projects using react-native-gesture-handler@v1, you can use `@jamsch/react-native-duo-drag-drop@0.4.2`
+
 ## Installation
 
 ```sh
