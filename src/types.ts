@@ -14,4 +14,4 @@ export type DuoWordAnimatedStyle = {
 export type DuoAnimatedStyleWorklet = (
   style: DuoWordAnimatedStyle & ViewStyle,
   isGestureActive: boolean,
-) => Animated.AnimatedStyleProp<ViewStyle | DuoWordAnimatedStyle>;
+) => Animated.AnimateStyle<ViewStyle | DuoWordAnimatedStyle>;

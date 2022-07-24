@@ -1,17 +1,10 @@
 import React, { ReactElement } from "react";
 import { StyleSheet, ViewStyle } from "react-native";
-import Animated, {
-  useAnimatedStyle,
-  useAnimatedGestureHandler,
-  useSharedValue,
-  useDerivedValue,
-  withTiming,
-} from "react-native-reanimated";
-import { PanGestureHandler, PanGestureHandlerGestureEvent, TapGestureHandler } from "react-native-gesture-handler";
-import { between, useVector } from "react-native-redash";
-import { calculateLayout, lastOrder, Offset, remove, reorder } from "./Layout";
+import Animated, { useAnimatedStyle, useSharedValue, useDerivedValue, withTiming } from "react-native-reanimated";
+import { Gesture, GestureDetector } from "react-native-gesture-handler";
+import { calculateLayout, lastOrder, Offset, remove, reorder, between, useVector } from "./Layout";
 import type { DuoAnimatedStyleWorklet } from "./types";
-import type { DuoWordAnimatedStyle } from ".";
+import type { DuoWordAnimatedStyle } from "./index";
 
 export interface SortableWordProps {
   animatedStyleWorklet?: DuoAnimatedStyleWorklet;
@@ -47,9 +40,11 @@ const SortableWord = ({
   const isAnimating = useSharedValue(false);
   const translation = useVector();
   const isInBank = useDerivedValue(() => offset.order.value === -1);
+  const ctxX = useSharedValue(0);
+  const ctxY = useSharedValue(0);
 
-  const onGestureEvent = useAnimatedGestureHandler<PanGestureHandlerGestureEvent, { x: number; y: number }>({
-    onStart(_, ctx) {
+  const panGesture = Gesture.Pan()
+    .onStart(() => {
       if (isAnimating.value) {
         return;
       }
@@ -61,13 +56,13 @@ const SortableWord = ({
         translation.y.value = offset.y.value;
       }
 
-      ctx.x = translation.x.value;
-      ctx.y = translation.y.value;
-    },
-    onActive({ translationX, translationY }, ctx) {
+      ctxX.value = translation.x.value;
+      ctxY.value = translation.y.value;
+    })
+    .onChange(({ translationX, translationY }) => {
       isGestureActive.value = true;
-      translation.x.value = ctx.x + translationX;
-      translation.y.value = ctx.y + translationY;
+      translation.x.value = ctxX.value + translationX;
+      translation.y.value = ctxY.value + translationY;
 
       if (isInBank.value && translation.y.value < linesHeight) {
         offset.order.value = lastOrder(offsets);
@@ -96,14 +91,13 @@ const SortableWord = ({
           break;
         }
       }
-    },
-    onEnd() {
+    })
+    .onEnd(() => {
       isAnimating.value = true;
       translation.x.value = offset.x.value;
       translation.y.value = offset.y.value;
       isGestureActive.value = false;
-    },
-  });
+    });
 
   const translateX = useDerivedValue(() => {
     if (isGestureActive.value) {
@@ -140,35 +134,30 @@ const SortableWord = ({
     };
     return (animatedStyleWorklet?.(style, isGestureActive.value) || style) as ViewStyle;
   });
+
+  const tapGesture = Gesture.Tap().onStart(() => {
+    if (isInBank.value) {
+      offset.order.value = lastOrder(offsets);
+    } else {
+      offset.order.value = -1;
+      remove(offsets, index);
+    }
+
+    isAnimating.value = true;
+
+    calculateLayout(offsets, containerWidth, wordHeight, wordGap, lineGap, rtl);
+    translation.x.value = offset.x.value;
+    translation.y.value = offset.y.value;
+  });
+
   return (
     <Animated.View style={style}>
       {gesturesDisabled ? (
         <Animated.View style={StyleSheet.absoluteFill}>{children}</Animated.View>
       ) : (
-        <PanGestureHandler enabled={true} onGestureEvent={onGestureEvent}>
-          <Animated.View style={StyleSheet.absoluteFill}>
-            <TapGestureHandler
-              enabled={true}
-              onActivated={() => {
-                if (isInBank.value) {
-                  offset.order.value = lastOrder(offsets);
-                } else {
-                  offset.order.value = -1;
-                  remove(offsets, index);
-                }
-
-                isAnimating.value = true;
-                setTimeout(() => {
-                  calculateLayout(offsets, containerWidth, wordHeight, wordGap, lineGap, rtl);
-                  translation.x.value = offset.x.value;
-                  translation.y.value = offset.y.value;
-                }, 16);
-              }}
-            >
-              <Animated.View>{children}</Animated.View>
-            </TapGestureHandler>
-          </Animated.View>
-        </PanGestureHandler>
+        <GestureDetector gesture={Gesture.Race(tapGesture, panGesture)}>
+          <Animated.View style={StyleSheet.absoluteFill}>{children}</Animated.View>
+        </GestureDetector>
       )}
     </Animated.View>
   );

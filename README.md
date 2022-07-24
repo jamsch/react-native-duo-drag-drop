@@ -8,9 +8,9 @@ Duolingo-style drag and drop for React Native using `react-native-gesture-handle
 
 Please make sure you have the the following dependencies installed in your project before continuing:
 
-- react-native >= 0.64
-- react-native-reanimated >= 2.2
-- react-native-gesture-handler >= 1.10
+- react-native ^0.68.2
+- react-native-reanimated ^2.8.0
+- react-native-gesture-handler ^2.2.1
 
 ## Installation
 

@@ -161,13 +161,15 @@ const DuoDragDrop = React.forwardRef<DuoDragDropRef, DuoDragDropProps>((props, r
   const initialized = layout && containerWidth > 0;
 
   // Toggle right-to-left layout
-  useEffect(() => {
-    if (initialized) {
-      runOnUI(() => {
+  useEffect(
+    () => {
+      if (initialized) {
         calculateLayout(offsets, containerWidth, wordHeight, wordGap, lineGap, rtl);
-      })();
-    }
-  }, [rtl, initialized, offsets, containerWidth, wordHeight, wordGap, lineGap]);
+      }
+    },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [rtl],
+  );
 
   useEffect(() => {
     // Notify parent the initialized status
@@ -175,7 +177,7 @@ const DuoDragDrop = React.forwardRef<DuoDragDropRef, DuoDragDropProps>((props, r
   }, [initialized, onReady]);
 
   useEffect(() => {
-    // Reset layout when the values change
+    // Reset layout when user-provided measurements change
     setLayout(null);
   }, [wordBankOffsetY, wordBankAlignment, wordGap, wordHeight]);
 
@@ -277,7 +279,7 @@ function ComputeWordLayout({
       {children.map((child, index) => {
         return (
           <View
-            key={`compute.${index}`}  
+            key={`compute.${index}`}
             onLayout={(e) => {
               const { x, y, width, height } = e.nativeEvent.layout;
               calculatedOffsets.current[index] = { width, height, x, y };
