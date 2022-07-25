@@ -1,5 +1,7 @@
 # @jamsch/react-native-duo-drag-drop
 
+[![npm version](https://badge.fury.io/js/@jamsch%2Freact-mockups.svg)](https://www.npmjs.com/package/@jamsch/react-native-duo-drag-drop) ![bundle size](https://img.shields.io/bundlephobia/min/@jamsch/react-native-duo-drag-drop)
+
 Duolingo-style drag and drop for React Native using `react-native-gesture-handler` & `react-native-reanimated`. This library is heavily inspired by the work done by William Candillon in his video: [_Duolingo Drag-and-drop - "Can it be done in React Native?"_](https://www.youtube.com/watch?v=tHWGKdpj1rs)
 
 ![https://i.imgur.com/1YkxXk3.gif](https://i.imgur.com/1YkxXk3.gif)
