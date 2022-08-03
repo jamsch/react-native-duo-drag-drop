@@ -1,6 +1,6 @@
 import React, { useContext } from "react";
 import { View, Text, StyleSheet, StyleProp, ViewStyle, TextStyle } from "react-native";
-import { WordContext } from "./DuoDragDrop";
+import WordContext from "./WordContext";
 import { colors } from "./colors";
 
 export interface WordProps {

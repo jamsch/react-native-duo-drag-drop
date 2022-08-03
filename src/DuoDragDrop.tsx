@@ -1,5 +1,5 @@
 /* eslint-disable react-hooks/rules-of-hooks */
-import React, { createContext, Fragment, useEffect, useImperativeHandle, useMemo, useRef, useState } from "react";
+import React, { Fragment, useEffect, useImperativeHandle, useMemo, useRef, useState } from "react";
 import { View, StyleSheet, LayoutRectangle, StyleProp, ViewStyle } from "react-native";
 import { useSharedValue, runOnUI } from "react-native-reanimated";
 import SortableWord from "./SortableWord";
@@ -8,6 +8,7 @@ import Word from "./Word";
 import Placeholder from "./Placeholder";
 import Lines from "./Lines";
 import type { DuoAnimatedStyleWorklet } from "./types";
+import WordContext from "./WordContext";
 
 export interface DuoDragDropProps {
   /** List of words */
@@ -49,8 +50,6 @@ export interface DuoDragDropProps {
   /** Runs when the drag-and-drop has rendered */
   onReady?: (ready: boolean) => void;
 }
-
-export const WordContext = createContext({ wordHeight: 55, text: "", wordGap: 4 });
 
 export type DuoDragDropRef = {
   /** Returns an ordered list of words that are in the "word bank" as well as answered */
