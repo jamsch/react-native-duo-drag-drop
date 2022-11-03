@@ -1,17 +1,17 @@
 {
   "dependencies": {
-    "expo": "^45.0.6",
-    "react": "17.0.2",
-    "react-dom": "17.0.2",
-    "react-native": "0.68.2",
-    "react-native-gesture-handler": "~2.2.1",
-    "react-native-reanimated": "~2.8.0"
+    "expo": "^46.0.0",
+    "react": "18.0.0",
+    "react-dom": "18.0.0",
+    "react-native": "0.69.6",
+    "react-native-gesture-handler": "~2.5.0",
+    "react-native-reanimated": "~2.9.1"
   },
   "devDependencies": {
-    "@babel/core": "^7.18.9",
-    "@types/react": "17.0.47",
-    "@types/react-native": "0.69.3",
-    "typescript": "4.7.4"
+    "@babel/core": "^7.18.6",
+    "@types/react": "~18.0.0",
+    "@types/react-native": "~0.69.1",
+    "typescript": "^4.6.3"
   },
   "scripts": {
     "start": "expo start",

@@ -1,6 +1,6 @@
 /* eslint-disable react-native/no-inline-styles */
 import "react-native-gesture-handler";
-import React, { useRef, useState } from "react";
+import { useRef, useState } from "react";
 import { StyleSheet, View, Text, Button, SafeAreaView } from "react-native";
 import DuoDragDrop, {
   DuoDragDropRef,

@@ -2,24 +2,24 @@
   "name": "@jamsch/react-native-duo-drag-drop",
   "version": "1.0.1",
   "description": "Duolingo-style drag and drop for React Native",
-  "main": "lib/commonjs/index",
-  "module": "lib/module/index",
-  "types": "lib/typescript/index.d.ts",
-  "react-native": "src/index",
+  "main": "lib/commonjs/index.js",
+  "module": "lib/module/index.js",
+  "types": "lib/typescript/src/index.d.ts",
+  "react-native": "src/index.tsx",
   "source": "src/index",
   "files": [
     "src",
     "lib",
+    "!**/__tests__",
+    "!**/__fixtures__",
+    "!**/__mocks__",
     "android",
     "ios",
     "cpp",
     "react-native-duo-drag-drop.podspec",
     "!lib/typescript/example",
     "!android/build",
-    "!ios/build",
-    "!**/__tests__",
-    "!**/__fixtures__",
-    "!**/__mocks__"
+    "!ios/build"
   ],
   "scripts": {
     "test": "jest",
@@ -48,27 +48,27 @@
     "registry": "https://registry.npmjs.org/"
   },
   "devDependencies": {
-    "@commitlint/config-conventional": "17.0.3",
-    "@react-native-community/eslint-config": "3.0.3",
-    "@release-it/conventional-changelog": "5.0.0",
-    "@types/jest": "28.1.6",
-    "@types/react": "17.0.47",
-    "@types/react-native": "0.69.3",
-    "commitlint": "17.0.3",
-    "eslint": "8.20.0",
+    "@commitlint/config-conventional": "17.2.0",
+    "@react-native-community/eslint-config": "3.1.0",
+    "@release-it/conventional-changelog": "5.1.1",
+    "@types/jest": "29.2.1",
+    "@types/react": "18.0.24",
+    "@types/react-native": "0.70.6",
+    "commitlint": "17.2.0",
+    "eslint": "8.26.0",
     "eslint-config-prettier": "8.5.0",
     "eslint-plugin-prettier": "4.2.1",
     "husky": "8.0.1",
     "jest": "28.1.3",
     "pod-install": "0.1.38",
     "prettier": "2.7.1",
-    "react": "18.0.0",
-    "react-native": "0.69.2",
-    "react-native-builder-bob": "0.18.3",
-    "release-it": "15.1.3",
-    "react-native-gesture-handler": "~2.2.1",
-    "react-native-reanimated": "~2.8.0",
-    "typescript": "4.7.4"
+    "react": "18.1.0",
+    "react-native": "0.70.4",
+    "react-native-builder-bob": "0.20.0",
+    "release-it": "15.5.0",
+    "react-native-gesture-handler": "~2.8.0",
+    "react-native-reanimated": "~2.11.0",
+    "typescript": "4.8.4"
   },
   "peerDependencies": {
     "react": "*",
@@ -150,12 +150,7 @@
     "targets": [
       "commonjs",
       "module",
-      [
-        "typescript",
-        {
-          "project": "tsconfig.build.json"
-        }
-      ]
+      "typescript"
     ]
   }
 }
