@@ -7,7 +7,7 @@ import { calculateLayout, Offset } from "./Layout";
 import Word from "./Word";
 import Placeholder from "./Placeholder";
 import Lines from "./Lines";
-import type { DuoAnimatedStyleWorklet } from "./types";
+import type { DuoAnimatedStyleWorklet, OnDropFunction } from "./types";
 import WordContext from "./WordContext";
 
 export interface DuoDragDropProps {
@@ -49,6 +49,8 @@ export interface DuoDragDropProps {
   animatedStyleWorklet?: DuoAnimatedStyleWorklet;
   /** Runs when the drag-and-drop has rendered */
   onReady?: (ready: boolean) => void;
+  /** Called when a user taps or drags a word to its destination */
+  onDrop?: OnDropFunction;
 }
 
 export type DuoDragDropRef = {
@@ -85,6 +87,7 @@ const DuoDragDrop = React.forwardRef<DuoDragDropRef, DuoDragDropProps>((props, r
     wordHeight = 45,
     animatedStyleWorklet,
     onReady,
+    onDrop,
   } = props;
   const lineHeight = props.lineHeight || wordHeight * 1.2;
   const lineGap = lineHeight - wordHeight;
@@ -229,6 +232,7 @@ const DuoDragDrop = React.forwardRef<DuoDragDropRef, DuoDragDropProps>((props, r
             wordGap={wordGap}
             wordBankOffsetY={wordBankOffsetY}
             animatedStyleWorklet={animatedStyleWorklet}
+            onDrop={onDrop}
           >
             {child}
           </SortableWord>

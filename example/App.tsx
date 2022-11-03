@@ -37,15 +37,18 @@ export default function App() {
   const [answeredWords, setAnsweredWords] = useState<string[] | null>(null);
   const [shouldUseCustomWorket, setShouldUseCustomWorket] = useState(false);
   const duoDragDropRef = useRef<DuoDragDropRef>(null);
+  const [log, setLog] = useState<string[]>([]);
+
+  const words = ["Juan", "She", "apples", "today", "with", "eats", "her", "another"];
 
   return (
     <GestureHandlerRootView style={styles.container}>
       <SafeAreaView style={styles.container}>
-        <ScrollView style={styles.container}>
+        <ScrollView>
           <View style={styles.dragDropContainer}>
             <DuoDragDrop
               ref={duoDragDropRef}
-              words={["Juan", "She", "apples", "today", "with", "eats", "her", "another"]}
+              words={words}
               wordHeight={40}
               lineHeight={49}
               wordGap={4}
@@ -55,6 +58,13 @@ export default function App() {
               wordBankAlignment="center"
               extraData={gradeWords}
               animatedStyleWorklet={shouldUseCustomWorket ? customAnimatedStyle : undefined}
+              onDrop={(ev) => {
+                const { destination, index, position } = ev;
+                setLog((l) => [
+                  ...l,
+                  `[onDrop] Dropped word '${words[index]}' on '${destination}' at position ${position}`,
+                ]);
+              }}
               renderWord={(_word, index) => (
                 <Word
                   containerStyle={
@@ -112,6 +122,15 @@ export default function App() {
             </View>
           </View>
         </ScrollView>
+        <View style={styles.logContainer}>
+          <Text style={styles.debugLogText}>EVENT LOG</Text>
+          <ScrollView>
+            {log.map((l, i) => (
+              <Text key={i}>{l}</Text>
+            ))}
+            {log.length === 0 && <Text>No events</Text>}
+          </ScrollView>
+        </View>
       </SafeAreaView>
     </GestureHandlerRootView>
   );
@@ -124,5 +143,12 @@ const styles = StyleSheet.create({
   dragDropContainer: {
     margin: 20,
     flex: 1,
+  },
+  debugLogText: {
+    fontWeight: "500",
+  },
+  logContainer: {
+    height: 130,
+    padding: 5,
   },
 });

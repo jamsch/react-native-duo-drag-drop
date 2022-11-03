@@ -15,3 +15,7 @@ export type DuoAnimatedStyleWorklet = (
   style: DuoWordAnimatedStyle & ViewStyle,
   isGestureActive: boolean,
 ) => Animated.AnimateStyle<ViewStyle | DuoWordAnimatedStyle>;
+
+export type DropEvent = { index: number; destination: "answered" | "bank"; position: number };
+
+export type OnDropFunction = (event: DropEvent) => void;

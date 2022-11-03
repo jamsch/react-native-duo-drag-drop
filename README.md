@@ -43,22 +43,50 @@ export default App;
 
 ## DuoDragDrop props
 
-| Prop                 | Type                                                                                      | Description                                                                                   |
-| -------------------- | ----------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------- |
-| words                | string[]                                                                                  | List of words that will be used for the drag-and-drop                                         |
-| extraData            | any?                                                                                      | (Optional) A marker property for telling the words to re-render                               |
-| wordHeight           | number?                                                                                   | (Optional) height of an individual word. Default: 45                                          |
-| wordGap              | number?                                                                                   | (Optional) The gap between each word / line: Default: 4                                       |
-| lineHeight           | number?                                                                                   | (Optional) The height of a single line in the top "answered" pile. Default: wordHeight \* 1.2 |
-| wordBankOffsetY      | number?                                                                                   | (Optional) The offset between the "Bank" pile and the "Answer" pile. Default: 20              |
-| wordBankAlignment    | "center" \| "right" \| "left"                                                             | (Optional) Alignment of the words in the word bank. Default "center"                          |
-| gesturesDisabled     | boolean?                                                                                  | (Optional) Whether tap & drag gestures are disabled. Default: false                           |
-| rtl                  | boolean?                                                                                  | (Optional) Whether to lay out words in the "Answer" pile from right-to-left (e.g.Arabic)      |
-| renderWord           | (word: string, index: number) => JSX.Element                                              | (Optional) Overrides the default word renderer                                                |
-| renderPlaceholder    | (props: {style: StyleProp\<ViewStyle\>}) => JSX.Element                                   | (Optional) Overrides the default placeholder renderer                                         |
-| renderLines          | (props: { numLines: number; containerHeight: number; lineHeight: number }) => JSX.Element | (Optional) Overrides the default lines renderer                                               |
-| animatedStyleWorklet | (style: ViewStyle, isGestureActive: boolean) => ViewStyle                                 | (Optional) A worket function that allows style modifications while gestures are active.       |
-| onReady              | (ready: boolean) => void                                                                  | (Optional) Runs when the drag-and-drop has rendered or re-initializing.                       |
+```ts
+interface DuoDragDropProps {
+  /** List of words that will be used for the drag-and-drop  */
+  words: string[];
+  /** Re-renders the words when this value changes. */
+  extraData?: any;
+  /** Height of an individual word. Default: 45 */
+  wordHeight?: number;
+  /** The gap between each word / line: Default: 4 */
+  wordGap?: number;
+  /** The height of a single line in the top "answered" pile. Default: wordHeight * 1.2  */
+  lineHeight?: number;
+  /** The margin between the "Bank" pile and the "Answer" pile. Default: 20 */
+  wordBankOffsetY?: number;
+  /** Whether to lay out words in the "Answer" pile from right-to-left (for languages such as Arabic) */
+  rtl?: boolean;
+  /** Whether tap & drag gestures are disabled. Default: false */
+  gesturesDisabled?: boolean;
+  /** The offset between the "Bank" pile and the "Answer" pile. Default: 20 */
+  wordBankAlignment?: "center" | "left" | "right";
+  /** Overrides the default Word renderer */
+  renderWord?: (word: string, index: number) => JSX.Element;
+  /** Overrides the default Lines renderer */
+  renderLines?: (props: { numLines: number; containerHeight: number; lineHeight: number }) => JSX.Element;
+  /** Overrides the default Placeholder renderer */
+  renderPlaceholder?:
+    | ((props: {
+        style: {
+          position: "absolute";
+          height: number;
+          top: number;
+          left: number;
+          width: number;
+        };
+      }) => JSX.Element)
+    | null;
+  /** Allows user to modify animation of the word while it's animating. NOTE: this must be a worklet */
+  animatedStyleWorklet?: DuoAnimatedStyleWorklet;
+  /** Runs when the drag-and-drop has rendered */
+  onReady?: (ready: boolean) => void;
+  /** Called when a user taps or drags a word to its destination */
+  onDrop?: (event: { index: number; destination: "answered" | "bank"; position: number }) => void;
+}
+```
 
 ## DuoDragDrop ref value
 

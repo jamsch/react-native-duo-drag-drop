@@ -1,4 +1,9 @@
 {
-  "compilerOptions": {},
+  "compilerOptions": {
+    "paths": {
+      "@jamsch/react-native-duo-drag-drop": ["../src/index"]
+    },
+    "jsx": "react-jsx"
+  },
   "extends": "expo/tsconfig.base"
 }

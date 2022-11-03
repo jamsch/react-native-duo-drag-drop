@@ -1,13 +1,20 @@
-import React, { ReactElement } from "react";
+import { memo, ReactElement, useCallback } from "react";
 import { StyleSheet, ViewStyle } from "react-native";
-import Animated, { useAnimatedStyle, useSharedValue, useDerivedValue, withTiming } from "react-native-reanimated";
+import Animated, {
+  useAnimatedStyle,
+  useSharedValue,
+  useDerivedValue,
+  withTiming,
+  runOnJS,
+} from "react-native-reanimated";
 import { Gesture, GestureDetector } from "react-native-gesture-handler";
 import { calculateLayout, lastOrder, Offset, remove, reorder, between, useVector } from "./Layout";
-import type { DuoAnimatedStyleWorklet } from "./types";
+import type { DuoAnimatedStyleWorklet, OnDropFunction } from "./types";
 import type { DuoWordAnimatedStyle } from "./index";
 
 export interface SortableWordProps {
   animatedStyleWorklet?: DuoAnimatedStyleWorklet;
+  onDrop?: OnDropFunction;
   offsets: Offset[];
   children: ReactElement<{ id: number }>;
   index: number;
@@ -34,6 +41,7 @@ const SortableWord = ({
   wordGap,
   wordBankOffsetY,
   lineGap,
+  onDrop,
 }: SortableWordProps) => {
   const offset = offsets[index];
   const isGestureActive = useSharedValue(false);
@@ -42,12 +50,25 @@ const SortableWord = ({
   const isInBank = useDerivedValue(() => offset.order.value === -1);
   const ctxX = useSharedValue(0);
   const ctxY = useSharedValue(0);
+  const panOrderHasChanged = useSharedValue(false);
+
+  const emitOnDrop = useCallback(
+    () =>
+      onDrop?.({
+        index,
+        destination: offset.order.value === -1 ? "bank" : "answered",
+        position: offset.order.value,
+      }),
+    [index, offset, onDrop],
+  );
 
   const panGesture = Gesture.Pan()
     .onStart(() => {
       if (isAnimating.value) {
         return;
       }
+      panOrderHasChanged.value = false;
+
       if (isInBank.value) {
         translation.x.value = offset.originalX.value;
         translation.y.value = offset.originalY.value + wordBankOffsetY;
@@ -67,10 +88,12 @@ const SortableWord = ({
       if (isInBank.value && translation.y.value < linesHeight) {
         offset.order.value = lastOrder(offsets);
         calculateLayout(offsets, containerWidth, wordHeight, wordGap, lineGap, rtl);
+        panOrderHasChanged.value = true;
       } else if (!isInBank.value && translation.y.value > linesHeight - wordHeight / 2) {
         offset.order.value = -1;
         remove(offsets, index);
         calculateLayout(offsets, containerWidth, wordHeight, wordGap, lineGap, rtl);
+        panOrderHasChanged.value = true;
       }
 
       for (let i = 0; i < offsets.length; i++) {
@@ -78,9 +101,9 @@ const SortableWord = ({
         if (i === index && o.order.value !== -1) {
           continue;
         }
-        const isInBank = o.order.value === -1;
-        const x = isInBank ? o.originalX.value : o.x.value;
-        const y = isInBank ? o.originalY.value + wordBankOffsetY : o.y.value;
+        const isItemInBank = o.order.value === -1;
+        const x = isItemInBank ? o.originalX.value : o.x.value;
+        const y = isItemInBank ? o.originalY.value + wordBankOffsetY : o.y.value;
         if (
           between(translation.x.value, x, x + o.width.value, false) &&
           between(translation.y.value, y, y + wordHeight) && // NOTE: check y value when interacting with bottom
@@ -88,6 +111,7 @@ const SortableWord = ({
         ) {
           reorder(offsets, offset.order.value, o.order.value);
           calculateLayout(offsets, containerWidth, wordHeight, wordGap, lineGap, rtl);
+          panOrderHasChanged.value = true;
           break;
         }
       }
@@ -97,6 +121,10 @@ const SortableWord = ({
       translation.x.value = offset.x.value;
       translation.y.value = offset.y.value;
       isGestureActive.value = false;
+      if (panOrderHasChanged.value) {
+        runOnJS(emitOnDrop)();
+      }
+      panOrderHasChanged.value = false;
     });
 
   const translateX = useDerivedValue(() => {
@@ -148,6 +176,8 @@ const SortableWord = ({
     calculateLayout(offsets, containerWidth, wordHeight, wordGap, lineGap, rtl);
     translation.x.value = offset.x.value;
     translation.y.value = offset.y.value;
+
+    runOnJS(emitOnDrop)();
   });
 
   return (
@@ -163,4 +193,4 @@ const SortableWord = ({
   );
 };
 
-export default React.memo(SortableWord);
+export default memo(SortableWord);
