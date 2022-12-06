@@ -3,7 +3,6 @@
     "name": "react-native-duo-drag-drop-example",
     "slug": "react-native-duo-drag-drop-example",
     "version": "1.0.0",
-    "sdkVersion": "46.0.0",
     "platforms": [
       "ios",
       "android"
