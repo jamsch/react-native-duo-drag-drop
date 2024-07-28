@@ -1,9 +1,9 @@
 /* eslint-disable react-hooks/rules-of-hooks */
 import React, { Fragment, useEffect, useImperativeHandle, useMemo, useRef, useState } from "react";
-import { View, StyleSheet, LayoutRectangle, StyleProp, ViewStyle } from "react-native";
+import { View, StyleSheet, type LayoutRectangle, type StyleProp, type ViewStyle } from "react-native";
 import { useSharedValue, runOnUI } from "react-native-reanimated";
 import SortableWord from "./SortableWord";
-import { calculateLayout, Offset } from "./Layout";
+import { calculateLayout, type Offset } from "./Layout";
 import Word from "./Word";
 import Placeholder from "./Placeholder";
 import Lines from "./Lines";

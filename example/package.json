@@ -1,24 +1,23 @@
 {
-  "dependencies": {
-    "expo": "^47.0.0",
-    "react": "18.1.0",
-    "react-dom": "18.1.0",
-    "react-native": "0.70.5",
-    "react-native-gesture-handler": "~2.8.0",
-    "react-native-reanimated": "~2.12.0"
-  },
-  "devDependencies": {
-    "@babel/core": "^7.19.3",
-    "@types/react": "~18.0.24",
-    "@types/react-native": "~0.70.6",
-    "typescript": "^4.6.3"
-  },
+  "name": "react-native-duo-drag-drop-example",
+  "version": "1.0.0",
+  "private": true,
   "scripts": {
     "start": "expo start",
     "android": "expo start --android",
     "ios": "expo start --ios"
   },
-  "version": "1.0.0",
-  "private": true,
-  "name": "react-native-duo-drag-drop-example"
+  "dependencies": {
+    "expo": "^51.0.22",
+    "react": "18.2.0",
+    "react-dom": "18.2.0",
+    "react-native": "0.74.3",
+    "react-native-gesture-handler": "~2.16.1",
+    "react-native-reanimated": "~3.10.1"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.24.9",
+    "@types/react": "~18.2.79",
+    "typescript": "~5.3.3"
+  }
 }

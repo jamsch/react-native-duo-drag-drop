@@ -22,13 +22,10 @@
     "!ios/build"
   ],
   "scripts": {
-    "test": "jest",
     "typescript": "tsc --noEmit",
-    "lint": "eslint \"**/*.{js,ts,tsx}\"",
     "prepare": "bob build",
     "release": "release-it",
     "example": "yarn --cwd example",
-    "pods": "cd example && pod-install --quiet",
     "bootstrap": "yarn example && yarn && yarn pods"
   },
   "keywords": [
@@ -37,7 +34,7 @@
     "android"
   ],
   "repository": "https://github.com/jamsch/react-native-duo-drag-drop",
-  "author": "jamsch <jamsch18@student.wintec.ac.nz> (https://github.com/jamsch)",
+  "author": "jamsch <12927717+jamsch@users.noreply.github.com> (https://github.com/jamsch)",
   "license": "MIT",
   "bugs": {
     "url": "https://github.com/jamsch/react-native-duo-drag-drop/issues"
@@ -48,46 +45,24 @@
     "registry": "https://registry.npmjs.org/"
   },
   "devDependencies": {
-    "@commitlint/config-conventional": "17.2.0",
-    "@react-native-community/eslint-config": "3.1.0",
-    "@release-it/conventional-changelog": "5.1.1",
-    "@types/jest": "29.2.1",
-    "@types/react": "18.0.24",
-    "@types/react-native": "0.70.6",
-    "commitlint": "17.2.0",
-    "eslint": "8.26.0",
-    "eslint-config-prettier": "8.5.0",
-    "eslint-plugin-prettier": "4.2.1",
-    "husky": "8.0.1",
-    "jest": "28.1.3",
-    "pod-install": "0.1.38",
-    "prettier": "2.7.1",
-    "react": "18.1.0",
-    "react-native": "0.70.4",
-    "react-native-builder-bob": "0.20.0",
-    "release-it": "15.5.0",
-    "react-native-gesture-handler": "~2.8.0",
-    "react-native-reanimated": "~2.11.0",
-    "typescript": "4.8.4"
+    "@commitlint/config-conventional": "19.2.2",
+    "@release-it/conventional-changelog": "8.0.1",
+    "@types/react": "~18.2.79",
+    "commitlint": "19.3.0",
+    "prettier": "3.3.3",
+    "react": "18.2.0",
+    "react-native": "0.74.3",
+    "react-native-builder-bob": "0.28.1",
+    "release-it": "17.6.0",
+    "react-native-gesture-handler": "~2.16.1",
+    "react-native-reanimated": "~3.10.1",
+    "typescript": "5.5.4"
   },
   "peerDependencies": {
     "react": "*",
     "react-native": "*",
     "react-native-gesture-handler": "^2.0",
-    "react-native-reanimated": "^2.2"
-  },
-  "jest": {
-    "preset": "react-native",
-    "modulePathIgnorePatterns": [
-      "<rootDir>/example/node_modules",
-      "<rootDir>/lib/"
-    ]
-  },
-  "husky": {
-    "hooks": {
-      "commit-msg": "commitlint -E HUSKY_GIT_PARAMS",
-      "pre-commit": "yarn lint && yarn typescript"
-    }
+    "react-native-reanimated": "^3.0"
   },
   "commitlint": {
     "extends": [
@@ -111,34 +86,6 @@
       }
     }
   },
-  "eslintConfig": {
-    "root": true,
-    "extends": [
-      "@react-native-community",
-      "prettier"
-    ],
-    "rules": {
-      "react/react-in-jsx-scope": "off",
-      "no-shadow": "off",
-      "@typescript-eslint/no-shadow": "off",
-      "prettier/prettier": [
-        "error",
-        {
-          "quoteProps": "consistent",
-          "singleQuote": false,
-          "tabWidth": 2,
-          "printWidth": 120,
-          "trailingComma": "all",
-          "useTabs": false
-        }
-      ]
-    }
-  },
-  "eslintIgnore": [
-    "example/",
-    "node_modules/",
-    "lib/"
-  ],
   "prettier": {
     "quoteProps": "consistent",
     "singleQuote": false,

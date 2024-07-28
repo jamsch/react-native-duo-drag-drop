@@ -1,5 +1,5 @@
-import { memo, ReactElement, useCallback } from "react";
-import { StyleSheet, ViewStyle } from "react-native";
+import { memo, type ReactElement, useCallback } from "react";
+import { StyleSheet, type ViewStyle } from "react-native";
 import Animated, {
   useAnimatedStyle,
   useSharedValue,
@@ -8,7 +8,7 @@ import Animated, {
   runOnJS,
 } from "react-native-reanimated";
 import { Gesture, GestureDetector } from "react-native-gesture-handler";
-import { calculateLayout, lastOrder, Offset, remove, reorder, between, useVector } from "./Layout";
+import { calculateLayout, lastOrder, type Offset, remove, reorder, between, useVector } from "./Layout";
 import type { DuoAnimatedStyleWorklet, OnDropFunction } from "./types";
 import type { DuoWordAnimatedStyle } from "./index";
 
