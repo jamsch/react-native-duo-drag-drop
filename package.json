@@ -22,8 +22,9 @@
     "!ios/build"
   ],
   "scripts": {
-    "typescript": "tsc --noEmit",
-    "prepare": "bob build",
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint \"src/**/*.{js,ts,tsx}\"",
+    "prepack": "bob build",
     "release": "release-it",
     "example": "yarn --cwd example",
     "bootstrap": "yarn example && yarn"
