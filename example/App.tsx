@@ -2,13 +2,8 @@
 import "react-native-gesture-handler";
 import { useRef, useState } from "react";
 import { StyleSheet, View, Text, Button, SafeAreaView } from "react-native";
-import DuoDragDrop, {
-  DuoDragDropRef,
-  Word,
-  Placeholder,
-  Lines,
-  DuoAnimatedStyleWorklet,
-} from "@jamsch/react-native-duo-drag-drop";
+import DuoDragDrop, { Word, Placeholder, Lines } from "@jamsch/react-native-duo-drag-drop";
+import type { DuoDragDropRef, DuoAnimatedStyleWorklet } from "@jamsch/react-native-duo-drag-drop";
 import { GestureHandlerRootView, ScrollView } from "react-native-gesture-handler";
 import { withSpring, withTiming } from "react-native-reanimated";
 
