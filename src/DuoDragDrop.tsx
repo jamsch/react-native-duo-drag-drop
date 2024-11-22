@@ -155,7 +155,7 @@ const DuoDragDrop = React.forwardRef<DuoDragDropRef, DuoDragDropProps>((props, r
         for (let i = 0; i < newOffsets.length; i++) {
           offsets[i].order.value = newOffsets[i];
         }
-        setTimeout(() => calculateLayout(offsets, containerWidth, wordHeight, wordGap, lineGap, rtl), 16);
+        calculateLayout(offsets, containerWidth, wordHeight, wordGap, lineGap, rtl);
       })();
     },
   }));
