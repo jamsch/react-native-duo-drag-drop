@@ -45,11 +45,11 @@
     "registry": "https://registry.npmjs.org/"
   },
   "devDependencies": {
-    "@commitlint/config-conventional": "^19.5.0",
+    "@commitlint/config-conventional": "^20.0.0",
     "@react-native/babel-preset": "^0.82.1",
-    "@release-it/conventional-changelog": "^9.0.0",
+    "@release-it/conventional-changelog": "^10.0.2",
     "@types/react": "~18.3.11",
-    "commitlint": "^19.5.0",
+    "commitlint": "^20.1.0",
     "prettier": "3.7.1",
     "react": "19.1.0",
     "react-native": "0.82.1",
@@ -57,7 +57,7 @@
     "react-native-gesture-handler": "~2.29.1",
     "react-native-reanimated": "~4.1.1",
     "react-native-worklets": "0.5.1",
-    "release-it": "^17.8.2",
+    "release-it": "^19.0.6",
     "typescript": "~5.9.3"
   },
   "peerDependencies": {
