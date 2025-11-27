@@ -1,7 +1,7 @@
 /* eslint-disable react-hooks/rules-of-hooks */
 import React, { Fragment, useEffect, useImperativeHandle, useMemo, useRef, useState } from "react";
 import { View, StyleSheet, type LayoutRectangle, type StyleProp, type ViewStyle } from "react-native";
-import { useSharedValue, runOnUI } from "react-native-reanimated";
+import { useSharedValue } from "react-native-reanimated";
 import SortableWord from "./SortableWord";
 import { calculateLayout, type Offset } from "./Layout";
 import Word from "./Word";
@@ -9,6 +9,7 @@ import Placeholder from "./Placeholder";
 import Lines from "./Lines";
 import type { DuoAnimatedStyleWorklet, OnDropFunction } from "./types";
 import WordContext from "./WordContext";
+import { scheduleOnUI } from "react-native-worklets";
 
 export interface DuoDragDropProps {
   /** List of words */
@@ -151,12 +152,12 @@ const DuoDragDrop = React.forwardRef<DuoDragDropRef, DuoDragDropProps>((props, r
     },
     // Animates the word buttons to move to new positions
     setOffsets(newOffsets: number[]) {
-      runOnUI(() => {
+      scheduleOnUI(() => {
         for (let i = 0; i < newOffsets.length; i++) {
           offsets[i].order.value = newOffsets[i];
         }
         calculateLayout(offsets, containerWidth, wordHeight, wordGap, lineGap, rtl);
-      })();
+      });
     },
   }));
 

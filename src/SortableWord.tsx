@@ -1,16 +1,11 @@
 import { memo, type ReactElement, useCallback } from "react";
 import { StyleSheet, type ViewStyle } from "react-native";
-import Animated, {
-  useAnimatedStyle,
-  useSharedValue,
-  useDerivedValue,
-  withTiming,
-  runOnJS,
-} from "react-native-reanimated";
+import Animated, { useAnimatedStyle, useSharedValue, useDerivedValue, withTiming } from "react-native-reanimated";
 import { Gesture, GestureDetector } from "react-native-gesture-handler";
 import { calculateLayout, lastOrder, type Offset, remove, reorder, between, useVector } from "./Layout";
 import type { DuoAnimatedStyleWorklet, OnDropFunction } from "./types";
 import type { DuoWordAnimatedStyle } from "./index";
+import { scheduleOnRN } from "react-native-worklets";
 
 export interface SortableWordProps {
   animatedStyleWorklet?: DuoAnimatedStyleWorklet;
@@ -122,7 +117,7 @@ const SortableWord = ({
       translation.y.value = offset.y.value;
       isGestureActive.value = false;
       if (panOrderHasChanged.value) {
-        runOnJS(emitOnDrop)();
+        scheduleOnRN(emitOnDrop);
       }
       panOrderHasChanged.value = false;
     });
@@ -177,7 +172,7 @@ const SortableWord = ({
     translation.x.value = offset.x.value;
     translation.y.value = offset.y.value;
 
-    runOnJS(emitOnDrop)();
+    scheduleOnRN(emitOnDrop);
   });
 
   return (
