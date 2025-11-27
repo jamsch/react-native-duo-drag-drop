@@ -1,5 +1,4 @@
-import type Animated from "react-native-reanimated";
-import { useSharedValue } from "react-native-reanimated";
+import { useSharedValue, type SharedValue } from "react-native-reanimated";
 
 // These util functions were extracted from: wcadillon/react-native-redash
 
@@ -53,14 +52,14 @@ export interface Vector<T = number> {
 /**
  * @summary Returns a vector of shared values
  */
-export const useVector = (x1 = 0, y1?: number): Vector<Animated.SharedValue<number>> => {
+export const useVector = (x1 = 0, y1?: number): Vector<SharedValue<number>> => {
   const x = useSharedValue(x1);
   const y = useSharedValue(y1 ?? x1);
   return { x, y };
 };
 
 type SharedValues<T extends Record<string, string | number | boolean>> = {
-  [K in keyof T]: Animated.SharedValue<T[K]>;
+  [K in keyof T]: SharedValue<T[K]>;
 };
 
 export type Offset = SharedValues<{
